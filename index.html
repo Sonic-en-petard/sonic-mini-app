@@ -27,6 +27,7 @@ h2{font-size:20px}
 label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}
 input,select,textarea{width:100%;padding:11px;border:1px solid #c5d8ec;border-radius:10px;font:inherit}
 button{background:#087ee8;color:white;border:0;border-radius:10px;padding:12px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
 .product button{width:100%;margin-top:10px}
 .cart{margin-top:22px}
 .cart-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #e3eaf2}
@@ -89,12 +90,11 @@ Ces coordonnées serviront à vous recontacter au sujet de votre demande.
 </div>
 
 <button class="checkout" onclick="order()">
-✅ Préparer ma commande
+✅ Envoyer ma commande
 </button>
 
 <p class="note">
-Le bouton prépare un message Telegram.
-Vous devrez choisir le destinataire et envoyer le message pour transmettre la demande.
+Votre demande est transmise directement à notre équipe.
 Aucun paiement en ligne.
 </p>
 </section>
@@ -105,6 +105,8 @@ Aucun paiement en ligne.
 <script>
 const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
+
+const WEBHOOK="https://hook.eu1.make.com/5fw14g6doaglmhjj7jw4s8mnt479l23p";
 
 const products=[
  {id:1,name:"Jaune Mousseux",photo:"69B011F4-2155-4AC6-8C39-0CEF6F24543A.png",emoji:"🍞"},
@@ -213,7 +215,7 @@ function renderCart(){
   "Total : "+euro(getTotal());
 }
 
-function order(){
+async function order(){
  const name=document.getElementById("name").value.trim();
  const phone=document.getElementById("phone").value.trim();
  const telegram=document.getElementById("telegram").value.trim();
@@ -240,32 +242,60 @@ function order(){
   return;
  }
 
- const lines=[
-  "🛒 DEMANDE DE COMMANDE",
-  "",
-  "Prénom : "+name,
-  "Téléphone : "+(phone||"Non renseigné"),
-  "Telegram : "+(telegram||"Non renseigné"),
-  "Mode : "+delivery,
-  "",
-  ...cart.map(item=>
-   item.name+" — Budget : "+euro(item.amount)
-  ),
-  "",
-  "BUDGET TOTAL : "+euro(getTotal()),
-  "Informations : "+(details||"Aucune")
- ];
+ const button=document.querySelector(".checkout");
+ button.disabled=true;
+ button.textContent="⏳ Envoi en cours...";
 
- const message=lines.join("\n");
+ const items=cart.map(item=>
+  item.name+" — Budget : "+euro(item.amount)
+ ).join("\n");
 
- const url="https://t.me/share/url?url="+
-  encodeURIComponent("https://t.me/BigSonicBot")+
-  "&text="+encodeURIComponent(message);
+ const total=euro(getTotal());
 
- if(tg?.openTelegramLink){
-  tg.openTelegramLink(url);
- }else{
-  window.location.href=url;
+ const message=[
+  "🛒 NOUVELLE COMMANDE",
+  "",
+  "👤 Prénom : "+name,
+  "📱 Téléphone : "+(phone||"Non renseigné"),
+  "💬 Telegram : "+(telegram||"Non renseigné"),
+  "🚚 Mode de réception : "+delivery,
+  "",
+  "📦 ARTICLES :",
+  items,
+  "",
+  "💰 TOTAL : "+total,
+  "📝 Informations : "+(details||"Aucune")
+ ].join("\n");
+
+ const payload={
+  name:name,
+  phone:phone||"Non renseigné",
+  telegram:telegram||"Non renseigné",
+  delivery:delivery,
+  items:items,
+  total:total,
+  details:details||"Aucune",
+  message:message
+ };
+
+ try{
+  await fetch(WEBHOOK,{
+   method:"POST",
+   mode:"no-cors",
+   headers:{"Content-Type":"text/plain"},
+   body:JSON.stringify(payload)
+  });
+
+  alert("✅ Demande transmise !");
+
+  cart.length=0;
+  renderCart();
+
+ }catch(error){
+  alert("❌ Impossible de lancer l'envoi. Réessayez.");
+ }finally{
+  button.disabled=false;
+  button.textContent="✅ Envoyer ma commande";
  }
 }
 
