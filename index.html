@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sonic en Pétard</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ color:#183153;
+ background:#f2f8ff;
+}
+body:before{
+ content:"";
+ position:fixed;
+ inset:0;
+ background:
+  linear-gradient(90deg,
+   rgba(242,248,255,.94),
+   rgba(242,248,255,.76)),
+  url("sonic.png") right center/75% auto no-repeat;
+ opacity:.65;
+ pointer-events:none;
+ z-index:-1;
+}
+header{
+ background:linear-gradient(135deg,#0065cf,#29a8ff);
+ color:white;
+ text-align:center;
+ padding:28px 14px;
+}
+header h1{font-size:25px;margin:0 0 8px}
+header p{margin:0}
+main{max-width:650px;margin:auto;padding:16px}
+h2{font-size:20px}
+.products{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;
+}
+.product,.cart{
+ background:rgba(255,255,255,.96);
+ border-radius:16px;
+ padding:13px;
+ box-shadow:0 4px 15px #cbdff0;
+}
+.photo{
+ height:105px;
+ border-radius:12px;
+ background:#e1f1ff;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:40px;
+ overflow:hidden;
+}
+.photo img{
+ width:100%;
+ height:100%;
+ object-fit:cover;
+}
+.product h3{font-size:15px;margin:12px 0 6px}
+.price{font-weight:bold;color:#0075df}
+button{
+ border:0;
+ border-radius:10px;
+ padding:12px;
+ background:#087ee8;
+ color:white;
+ font-weight:bold;
+ cursor:pointer;
+}
+.product button{width:100%;margin-top:10px}
+.cart{margin-top:22px}
+.cart-row{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+ padding:10px 0;
+ border-bottom:1px solid #e3eaf2;
+}
+.cart-row button{padding:7px 11px}
+.total{font-weight:bold;font-size:19px;margin:16px 0}
+.field{margin-top:14px}
+label{display:block;font-weight:bold;margin-bottom:7px}
+input,select,textarea{
+ width:100%;
+ padding:12px;
+ border:1px solid #c5d8ec;
+ border-radius:10px;
+ font:inherit;
+}
+.checkout{width:100%;margin-top:16px}
+.note{font-size:12px;color:#64748b;line-height:1.5}
+footer{text-align:center;padding:24px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>⚡ SONIC EN PÉTARD</h1>
+<p>Bienvenue dans notre mini-boutique !</p>
+</header>
+
+<main>
+<h2>🛍️ Notre catalogue</h2>
+<p>Découvrez nos articles et ajoutez-les au panier.</p>
+<div class="products" id="products"></div>
+
+<section class="cart">
+<h2>🛒 Mon panier</h2>
+<div id="cart"></div>
+<div class="total" id="total">Total : 0,00 €</div>
+
+<div class="field">
+<label for="name">Votre prénom</label>
+<input id="name" placeholder="Votre prénom">
+</div>
+
+<div class="field">
+<label for="delivery">Mode de réception</label>
+<select id="delivery">
+<option value="Retrait">📍 Retrait</option>
+<option value="Livraison">🚚 Livraison</option>
+</select>
+</div>
+
+<div class="field">
+<label for="details">Informations complémentaires</label>
+<textarea id="details" rows="3"
+placeholder="Votre secteur ou vos précisions"></textarea>
+</div>
+
+<button class="checkout" onclick="order()">
+✅ Préparer ma commande
+</button>
+<p class="note">
+Votre commande sera préparée dans Telegram.
+Vous devrez choisir le destinataire et envoyer
+le message pour la transmettre.
+Aucun paiement en ligne.
+</p>
+</section>
+</main>
+
+<footer>⚡ Sonic en Pétard — Catalogue</footer>
+
+<script>
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
+// MODIFIE ICI LES 5 ARTICLES
+// Tu pourras remplacer les photos plus tard.
+const products=[
+ {id:1,name:"Article 1",price:5,photo:"",emoji:"📦"},
+ {id:2,name:"Article 2",price:10,photo:"",emoji:"🎁"},
+ {id:3,name:"Article 3",price:15,photo:"",emoji:"🛍️"},
+ {id:4,name:"Article 4",price:20,photo:"",emoji:"⭐"},
+ {id:5,name:"Article 5",price:25,photo:"",emoji:"⚡"}
+];
+
+const cart={};
+const euro=n=>n.toLocaleString("fr-FR",{
+ style:"currency",currency:"EUR"
+});
+
+function renderProducts(){
+ const container=document.getElementById("products");
+ container.replaceChildren();
+ products.forEach(p=>{
+  const card=document.createElement("div");
+  card.className="product";
+
+  const photo=document.createElement("div");
+  photo.className="photo";
+  if(p.photo){
+   const img=document.createElement("img");
+   img.src=p.photo;
+   img.alt=p.name;
+   photo.append(img);
+  }else{
+   photo.textContent=p.emoji;
+  }
+
+  const title=document.createElement("h3");
+  title.textContent=p.name;
+
+  const price=document.createElement("div");
+  price.className="price";
+  price.textContent=euro(p.price);
+
+  const btn=document.createElement("button");
+  btn.textContent="Ajouter +";
+  btn.onclick=()=>add(p.id);
+
+  card.append(photo,title,price,btn);
+  container.append(card);
+ });
+}
+
+function add(id){
+ cart[id]=(cart[id]||0)+1;
+ renderCart();
+}
+
+function remove(id){
+ if(cart[id]){
+  cart[id]--;
+  if(!cart[id])delete cart[id];
+ }
+ renderCart();
+}
+
+function getTotal(){
+ return products.reduce((sum,p)=>
+  sum+p.price*(cart[p.id]||0),0);
+}
+
+function renderCart(){
+ const el=document.getElementById("cart");
+ el.replaceChildren();
+ let count=0;
+
+ products.forEach(p=>{
+  const qty=cart[p.id]||0;
+  if(!qty)return;
+  count+=qty;
+
+  const row=document.createElement("div");
+  row.className="cart-row";
+
+  const label=document.createElement("span");
+  label.textContent=p.name+" × "+qty;
+
+  const minus=document.createElement("button");
+  minus.textContent="−";
+  minus.onclick=()=>remove(p.id);
+
+  const plus=document.createElement("button");
+  plus.textContent="+";
+  plus.onclick=()=>add(p.id);
+
+  row.append(label,minus,plus);
+  el.append(row);
+ });
+
+ if(!count)el.textContent="Votre panier est vide.";
+
+ document.getElementById("total").textContent=
+  "Total : "+euro(getTotal());
+}
+
+function order(){
+ const selected=products.filter(p=>cart[p.id]);
+ const name=document.getElementById("name").value.trim();
+ const delivery=document.getElementById("delivery").value;
+ const details=document.getElementById("details").value.trim();
+
+ if(!selected.length){
+  alert("Ajoutez un article au panier.");
+  return;
+ }
+ if(!name){
+  alert("Indiquez votre prénom.");
+  return;
+ }
+
+ const lines=[
+  "🛒 DEMANDE DE COMMANDE",
+  "",
+  "Prénom : "+name,
+  "Mode : "+delivery,
+  "",
+  ...selected.map(p=>
+   p.name+" × "+cart[p.id]+" = "+
+   euro(p.price*cart[p.id])
+  ),
+  "",
+  "TOTAL : "+euro(getTotal()),
+  "Informations : "+(details||"Aucune")
+ ];
+
+ const message=lines.join("\n");
+ const url="https://t.me/share/url?url="+
+  encodeURIComponent("https://t.me/BigSonicBot")+
+  "&text="+encodeURIComponent(message);
+
+ if(tg?.openTelegramLink){
+  tg.openTelegramLink(url);
+ }else{
+  window.location.href=url;
+ }
+}
+
+renderProducts();
+renderCart();
+</script>
+</body>
+</html>
