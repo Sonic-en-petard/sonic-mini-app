@@ -3,7 +3,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sonic en Pétard</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
@@ -11,29 +11,29 @@
 body{
  margin:0;
  font-family:Arial,sans-serif;
- color:#183153;
  background:#f2f8ff;
+ color:#183153;
 }
 body:before{
  content:"";
  position:fixed;
  inset:0;
  background:
-  linear-gradient(90deg,
-   rgba(242,248,255,.94),
-   rgba(242,248,255,.76)),
-  url("sonic.png") right center/75% auto no-repeat;
- opacity:.65;
- pointer-events:none;
+ linear-gradient(90deg,
+ rgba(242,248,255,.72),
+ rgba(242,248,255,.35)),
+ url("sonic.png") right center/95% auto no-repeat;
+ opacity:.85;
  z-index:-1;
+ pointer-events:none;
 }
 header{
  background:linear-gradient(135deg,#0065cf,#29a8ff);
  color:white;
  text-align:center;
- padding:28px 14px;
+ padding:26px 12px;
 }
-header h1{font-size:25px;margin:0 0 8px}
+header h1{margin:0 0 8px;font-size:25px}
 header p{margin:0}
 main{max-width:650px;margin:auto;padding:16px}
 h2{font-size:20px}
@@ -43,13 +43,13 @@ h2{font-size:20px}
  gap:12px;
 }
 .product,.cart{
- background:rgba(255,255,255,.96);
+ background:rgba(255,255,255,.92);
  border-radius:16px;
  padding:13px;
  box-shadow:0 4px 15px #cbdff0;
 }
 .photo{
- height:105px;
+ height:110px;
  border-radius:12px;
  background:#e1f1ff;
  display:flex;
@@ -63,14 +63,26 @@ h2{font-size:20px}
  height:100%;
  object-fit:cover;
 }
-.product h3{font-size:15px;margin:12px 0 6px}
-.price{font-weight:bold;color:#0075df}
+.product h3{font-size:15px;margin:12px 0}
+label{
+ display:block;
+ font-size:13px;
+ font-weight:bold;
+ margin-bottom:7px;
+}
+input,select,textarea{
+ width:100%;
+ padding:11px;
+ border:1px solid #c5d8ec;
+ border-radius:10px;
+ font:inherit;
+}
 button{
+ background:#087ee8;
+ color:white;
  border:0;
  border-radius:10px;
  padding:12px;
- background:#087ee8;
- color:white;
  font-weight:bold;
  cursor:pointer;
 }
@@ -84,23 +96,16 @@ button{
  padding:10px 0;
  border-bottom:1px solid #e3eaf2;
 }
-.cart-row button{padding:7px 11px}
-.total{font-weight:bold;font-size:19px;margin:16px 0}
+.cart-row button{padding:8px}
+.total{font-size:19px;font-weight:bold;margin:16px 0}
 .field{margin-top:14px}
-label{display:block;font-weight:bold;margin-bottom:7px}
-input,select,textarea{
- width:100%;
- padding:12px;
- border:1px solid #c5d8ec;
- border-radius:10px;
- font:inherit;
-}
 .checkout{width:100%;margin-top:16px}
 .note{font-size:12px;color:#64748b;line-height:1.5}
 footer{text-align:center;padding:24px;font-size:13px}
 </style>
 </head>
 <body>
+
 <header>
 <h1>⚡ SONIC EN PÉTARD</h1>
 <p>Bienvenue dans notre mini-boutique !</p>
@@ -108,7 +113,7 @@ footer{text-align:center;padding:24px;font-size:13px}
 
 <main>
 <h2>🛍️ Notre catalogue</h2>
-<p>Découvrez nos articles et ajoutez-les au panier.</p>
+<p>Choisissez un article et indiquez votre budget.</p>
 <div class="products" id="products"></div>
 
 <section class="cart">
@@ -139,9 +144,9 @@ placeholder="Votre secteur ou vos précisions"></textarea>
 ✅ Préparer ma commande
 </button>
 <p class="note">
-Votre commande sera préparée dans Telegram.
-Vous devrez choisir le destinataire et envoyer
-le message pour la transmettre.
+Le bouton prépare un message Telegram.
+Vous devrez choisir le destinataire et
+envoyer le message pour transmettre la demande.
 Aucun paiement en ligne.
 </p>
 </section>
@@ -153,17 +158,17 @@ Aucun paiement en ligne.
 const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
 
-// MODIFIE ICI LES 5 ARTICLES
-// Tu pourras remplacer les photos plus tard.
+// MODIFIE ICI LES NOMS ET PHOTOS
+// Exemple photo : "pain-blanc.jpg"
 const products=[
- {id:1,name:"Article 1",price:5,photo:"",emoji:"📦"},
- {id:2,name:"Article 2",price:10,photo:"",emoji:"🎁"},
- {id:3,name:"Article 3",price:15,photo:"",emoji:"🛍️"},
- {id:4,name:"Article 4",price:20,photo:"",emoji:"⭐"},
- {id:5,name:"Article 5",price:25,photo:"",emoji:"⚡"}
+ {id:1,name:"Pain blanc",photo:"",emoji:"🍞"},
+ {id:2,name:"Article 2",photo:"",emoji:"📦"},
+ {id:3,name:"Article 3",photo:"",emoji:"🛍️"},
+ {id:4,name:"Article 4",photo:"",emoji:"⭐"},
+ {id:5,name:"Article 5",photo:"",emoji:"⚡"}
 ];
 
-const cart={};
+const cart=[];
 const euro=n=>n.toLocaleString("fr-FR",{
  style:"currency",currency:"EUR"
 });
@@ -171,12 +176,14 @@ const euro=n=>n.toLocaleString("fr-FR",{
 function renderProducts(){
  const container=document.getElementById("products");
  container.replaceChildren();
+
  products.forEach(p=>{
   const card=document.createElement("div");
   card.className="product";
 
   const photo=document.createElement("div");
   photo.className="photo";
+
   if(p.photo){
    const img=document.createElement("img");
    img.src=p.photo;
@@ -189,78 +196,84 @@ function renderProducts(){
   const title=document.createElement("h3");
   title.textContent=p.name;
 
-  const price=document.createElement("div");
-  price.className="price";
-  price.textContent=euro(p.price);
+  const label=document.createElement("label");
+  label.textContent="Votre budget (€)";
+
+  const input=document.createElement("input");
+  input.type="number";
+  input.min="0.01";
+  input.step="0.01";
+  input.placeholder="Ex : 20";
+  input.inputMode="decimal";
 
   const btn=document.createElement("button");
-  btn.textContent="Ajouter +";
-  btn.onclick=()=>add(p.id);
+  btn.textContent="Ajouter au panier +";
+  btn.onclick=()=>{
+   const amount=Number(input.value);
+   if(!Number.isFinite(amount)||amount<=0){
+    alert("Indiquez un montant valide.");
+    return;
+   }
+   const cents=Math.round(amount*100);
+   if(cents<1||cents>10000000){
+    alert("Montant non valide.");
+    return;
+   }
+   cart.push({
+    name:p.name,
+    amount:cents/100
+   });
+   input.value="";
+   renderCart();
+  };
 
-  card.append(photo,title,price,btn);
+  card.append(photo,title,label,input,btn);
   container.append(card);
  });
 }
 
-function add(id){
- cart[id]=(cart[id]||0)+1;
- renderCart();
-}
-
-function remove(id){
- if(cart[id]){
-  cart[id]--;
-  if(!cart[id])delete cart[id];
- }
+function removeItem(index){
+ cart.splice(index,1);
  renderCart();
 }
 
 function getTotal(){
- return products.reduce((sum,p)=>
-  sum+p.price*(cart[p.id]||0),0);
+ return cart.reduce((sum,item)=>sum+item.amount,0);
 }
 
 function renderCart(){
  const el=document.getElementById("cart");
  el.replaceChildren();
- let count=0;
 
- products.forEach(p=>{
-  const qty=cart[p.id]||0;
-  if(!qty)return;
-  count+=qty;
+ if(!cart.length){
+  el.textContent="Votre panier est vide.";
+ }
 
+ cart.forEach((item,index)=>{
   const row=document.createElement("div");
   row.className="cart-row";
 
   const label=document.createElement("span");
-  label.textContent=p.name+" × "+qty;
+  label.textContent=item.name+" — "+euro(item.amount);
 
-  const minus=document.createElement("button");
-  minus.textContent="−";
-  minus.onclick=()=>remove(p.id);
+  const btn=document.createElement("button");
+  btn.textContent="✕";
+  btn.onclick=()=>removeItem(index);
 
-  const plus=document.createElement("button");
-  plus.textContent="+";
-  plus.onclick=()=>add(p.id);
-
-  row.append(label,minus,plus);
+  row.append(label,btn);
   el.append(row);
  });
-
- if(!count)el.textContent="Votre panier est vide.";
 
  document.getElementById("total").textContent=
   "Total : "+euro(getTotal());
 }
 
 function order(){
- const selected=products.filter(p=>cart[p.id]);
  const name=document.getElementById("name").value.trim();
  const delivery=document.getElementById("delivery").value;
  const details=document.getElementById("details").value.trim();
 
- if(!selected.length){
+ if(!cart.length){
   alert("Ajoutez un article au panier.");
   return;
  }
@@ -275,12 +288,11 @@ function order(){
   "Prénom : "+name,
   "Mode : "+delivery,
   "",
-  ...selected.map(p=>
-   p.name+" × "+cart[p.id]+" = "+
-   euro(p.price*cart[p.id])
+  ...cart.map(item=>
+   item.name+" — Budget : "+euro(item.amount)
   ),
   "",
-  "TOTAL : "+euro(getTotal()),
+  "BUDGET TOTAL : "+euro(getTotal()),
   "Informations : "+(details||"Aucune")
  ];
 
