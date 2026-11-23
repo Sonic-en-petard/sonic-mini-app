@@ -8,94 +8,28 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;
- font-family:Arial,sans-serif;
- background:#f2f8ff;
- color:#183153;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f8ff;color:#183153}
 body:before{
- content:"";
- position:fixed;
- inset:0;
- background:
- linear-gradient(90deg,
- rgba(242,248,255,.72),
- rgba(242,248,255,.35)),
- url("sonic.png") right center/95% auto no-repeat;
- opacity:.85;
- z-index:-1;
- pointer-events:none;
+ content:"";position:fixed;inset:0;
+ background:linear-gradient(90deg,rgba(242,248,255,.72),rgba(242,248,255,.35)),url("sonic.png") right center/95% auto no-repeat;
+ opacity:.85;z-index:-1;pointer-events:none
 }
-header{
- background:linear-gradient(135deg,#0065cf,#29a8ff);
- color:white;
- text-align:center;
- padding:26px 12px;
-}
+header{background:linear-gradient(135deg,#0065cf,#29a8ff);color:white;text-align:center;padding:26px 12px}
 header h1{margin:0 0 8px;font-size:25px}
 header p{margin:0}
 main{max-width:650px;margin:auto;padding:16px}
 h2{font-size:20px}
-.products{
- display:grid;
- grid-template-columns:repeat(2,minmax(0,1fr));
- gap:12px;
-}
-.product,.cart{
- background:rgba(255,255,255,.92);
- border-radius:16px;
- padding:13px;
- box-shadow:0 4px 15px #cbdff0;
-}
-.photo{
- height:110px;
- border-radius:12px;
- background:#e1f1ff;
- display:flex;
- align-items:center;
- justify-content:center;
- font-size:40px;
- overflow:hidden;
-}
-.photo img{
- width:100%;
- height:100%;
- object-fit:cover;
-}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.product,.cart{background:rgba(255,255,255,.92);border-radius:16px;padding:13px;box-shadow:0 4px 15px #cbdff0}
+.photo{height:110px;border-radius:12px;background:#e1f1ff;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover}
 .product h3{font-size:15px;margin:12px 0}
-label{
- display:block;
- font-size:13px;
- font-weight:bold;
- margin-bottom:7px;
-}
-input,select,textarea{
- width:100%;
- padding:11px;
- border:1px solid #c5d8ec;
- border-radius:10px;
- font:inherit;
-}
-button{
- background:#087ee8;
- color:white;
- border:0;
- border-radius:10px;
- padding:12px;
- font-weight:bold;
- cursor:pointer;
-}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #c5d8ec;border-radius:10px;font:inherit}
+button{background:#087ee8;color:white;border:0;border-radius:10px;padding:12px;font-weight:bold;cursor:pointer}
 .product button{width:100%;margin-top:10px}
 .cart{margin-top:22px}
-.cart-row{
- display:flex;
- align-items:center;
- justify-content:space-between;
- gap:8px;
- padding:10px 0;
- border-bottom:1px solid #e3eaf2;
-}
+.cart-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #e3eaf2}
 .cart-row button{padding:8px}
 .total{font-size:19px;font-weight:bold;margin:16px 0}
 .field{margin-top:14px}
@@ -123,8 +57,23 @@ footer{text-align:center;padding:24px;font-size:13px}
 
 <div class="field">
 <label for="name">Votre prénom</label>
-<input id="name" placeholder="Votre prénom">
+<input id="name" placeholder="Votre prénom" autocomplete="given-name">
 </div>
+
+<div class="field">
+<label for="phone">Numéro de téléphone</label>
+<input id="phone" type="tel" placeholder="06 12 34 56 78" autocomplete="tel">
+</div>
+
+<div class="field">
+<label for="telegram">Pseudo Telegram</label>
+<input id="telegram" placeholder="@pseudo" autocomplete="off">
+</div>
+
+<p class="note">
+Indiquez au moins un moyen de contact : téléphone ou pseudo Telegram.
+Ces coordonnées serviront à vous recontacter au sujet de votre demande.
+</p>
 
 <div class="field">
 <label for="delivery">Mode de réception</label>
@@ -136,17 +85,16 @@ footer{text-align:center;padding:24px;font-size:13px}
 
 <div class="field">
 <label for="details">Informations complémentaires</label>
-<textarea id="details" rows="3"
-placeholder="Votre secteur ou vos précisions"></textarea>
+<textarea id="details" rows="3" placeholder="Votre secteur ou vos précisions"></textarea>
 </div>
 
 <button class="checkout" onclick="order()">
 ✅ Préparer ma commande
 </button>
+
 <p class="note">
 Le bouton prépare un message Telegram.
-Vous devrez choisir le destinataire et
-envoyer le message pour transmettre la demande.
+Vous devrez choisir le destinataire et envoyer le message pour transmettre la demande.
 Aucun paiement en ligne.
 </p>
 </section>
@@ -158,19 +106,15 @@ Aucun paiement en ligne.
 const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
 
-// MODIFIE ICI LES NOMS ET PHOTOS
-// Exemple photo : "pain-blanc.jpg"
 const products=[
  {id:1,name:"Jaune Mousseux",photo:"69B011F4-2155-4AC6-8C39-0CEF6F24543A.png",emoji:"🍞"},
  {id:2,name:"Neige Colombienne",photo:"2F6CBCF6-DAA6-4D3B-A0D5-5CBA7372DAC4.png",emoji:"❄️"},
  {id:3,name:"Marron Rocheux",photo:"DD71EBED-6668-47A1-8278-8523D91058BD.png",emoji:"🌰"},
- {id:4,name:"Herbe Magique",photo:"88A24FDA-7974-4D9B-865F-196A6956CFDB.png",emoji:"🥦"},
+ {id:4,name:"Herbe Magique",photo:"88A24FDA-7974-4D9B-865F-196A6956CFDB.png",emoji:"🥦"}
 ];
 
 const cart=[];
-const euro=n=>n.toLocaleString("fr-FR",{
- style:"currency",currency:"EUR"
-});
+const euro=n=>n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
 
 function renderProducts(){
  const container=document.getElementById("products");
@@ -207,21 +151,23 @@ function renderProducts(){
 
   const btn=document.createElement("button");
   btn.textContent="Ajouter au panier +";
+
   btn.onclick=()=>{
    const amount=Number(input.value);
+
    if(!Number.isFinite(amount)||amount<=0){
     alert("Indiquez un montant valide.");
     return;
    }
+
    const cents=Math.round(amount*100);
+
    if(cents<1||cents>10000000){
     alert("Montant non valide.");
     return;
    }
-   cart.push({
-    name:p.name,
-    amount:cents/100
-   });
+
+   cart.push({name:p.name,amount:cents/100});
    input.value="";
    renderCart();
   };
@@ -269,6 +215,8 @@ function renderCart(){
 
 function order(){
  const name=document.getElementById("name").value.trim();
+ const phone=document.getElementById("phone").value.trim();
+ const telegram=document.getElementById("telegram").value.trim();
  const delivery=document.getElementById("delivery").value;
  const details=document.getElementById("details").value.trim();
 
@@ -276,8 +224,19 @@ function order(){
   alert("Ajoutez un article au panier.");
   return;
  }
+
  if(!name){
   alert("Indiquez votre prénom.");
+  return;
+ }
+
+ if(!phone&&!telegram){
+  alert("Indiquez au moins un numéro de téléphone ou un pseudo Telegram.");
+  return;
+ }
+
+ if(telegram&&!/^@[A-Za-z0-9_]{5,32}$/.test(telegram)){
+  alert("Indiquez un pseudo Telegram valide, par exemple @paul123.");
   return;
  }
 
@@ -285,6 +244,8 @@ function order(){
   "🛒 DEMANDE DE COMMANDE",
   "",
   "Prénom : "+name,
+  "Téléphone : "+(phone||"Non renseigné"),
+  "Telegram : "+(telegram||"Non renseigné"),
   "Mode : "+delivery,
   "",
   ...cart.map(item=>
@@ -296,6 +257,7 @@ function order(){
  ];
 
  const message=lines.join("\n");
+
  const url="https://t.me/share/url?url="+
   encodeURIComponent("https://t.me/BigSonicBot")+
   "&text="+encodeURIComponent(message);
